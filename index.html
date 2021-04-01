@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Happy Coding</title>
+        <link rel="stylesheet" href="/style/style.css">
+    </head>
+    <body>
+        <nav class="navbar">
+            <a href="#" class="navbar-brand">Happy coding</a>
+        </nav>
+        <ul>
+            <div class="direction">
+                <li><a href="#activity">Activity</a></li>
+            </div>
+        </ul>
+
+        <!-- Activity -->
+            <ul>
+                <div class="activity" id="activity"> 
+                    <li><a href="#">Javascript</a></li>
+                    <li><a href="#">CSS</a></li>
+                    <li><a href="#">HTML</a></li>
+                </div>
+            </ul>
+
+
+            <ul>
+                <div class="direction">
+                    <li><a href="#activity" style="font-size: 30px;font-weight: 500;">Q&A</a></li>
+                </div>
+            </ul>
+        <div id="app">
+            <div v-if="state == 0" id="wrapper">
+                <h3>Ask us anything!</h3>
+                <form @submit.prevent="setUsername">
+                    <input type="text" placeholder="Username..." v-model:value="username">
+                    <input type="submit" value="Join">
+                </form>
+                <button @click="continueWithoutUsername">Join as a Guest</button>
+            </div>
+            <div v-if="state == 1 " id="wrapper_for">
+                <ul id="chatbox">
+                    <li v-for="message in messages">
+                        <b>{{ message.user }}:</b>{{ message.message }}
+                    </li>
+                </ul>
+                <form @submit.prevent="sendMessage">
+                    <!--v-model是綁定在表單元件或自訂元件上，為了「實現雙向綁定」。-->
+                    <input type="text" placeholder="Message..." v-model:value="message">
+                    <input type="submit" value="Send">
+                </form>                
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script> 
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="main.js"></script>
+        <script>
+            //In case we don't want to get a undeclared variable!
+            var socket = null;
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    message: "",
+                    messages: [],
+                    username:'',
+                    state: 0
+                },
+                methods:{
+                    //project重頭戲
+                    sendMessage: function(){
+                        //emit向上層傳遞資料
+                        socket.emit('message',this.message);
+                        this.message = '';
+                    },
+                    setUsername: function(){
+                        //emit向上層傳遞資料
+                        socket.emit('join', this.username);
+                        this.username = "";
+                        this.state = 1;
+                    },
+                    continueWithoutUsername: function(){
+                        //emit向上層傳遞資料
+                        socket.emit('join', null);
+                        this.state = 1;
+                    }
+                },
+                //client side
+                created: function(){
+                    //io() instance 
+                    socket = io();
+                },
+                //re-render and patch
+                mounted: function() {
+                    //觸發渲染render
+                    socket.on('message', function(message){
+                        //callback function的this不一樣，應該使用Vue Instance!
+                        app.messages.push(message);
+                        //mounted,render完，非同步更新
+                        app.$nextTick(function(){
+                            var messageBox = document.getElementById('chatbox');
+                            messageBox.scrollTop = messageBox.scrollHeight;
+                        })
+                    })
+                }
+            }); 
+
+        </script>
+    </body>
+</html>

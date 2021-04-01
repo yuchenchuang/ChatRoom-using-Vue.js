@@ -1,0 +1,15 @@
+{
+  "name": "happy_coding",
+  "version": "1.0.0",
+  "description": "chat application",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cheryl",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3",
+    "socket.io": "^4.0.0"
+  }
+}
